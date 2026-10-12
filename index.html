@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Going Around - Writing Quiz</title>
+  <style>
+    :root{
+      --pink:#ffd7ea;
+      --blue:#dff3ff;
+      --yellow:#fff3b5;
+      --green:#ddf8da;
+      --purple:#efe3ff;
+      --red:#ff6b6b;
+      --text:#24324a;
+      --shadow:0 10px 24px rgba(0,0,0,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: "Trebuchet MS", "Comic Sans MS", Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 10% 15%, #fff 0 20px, transparent 21px),
+        radial-gradient(circle at 80% 20%, #fff 0 24px, transparent 25px),
+        radial-gradient(circle at 60% 8%, #fff 0 16px, transparent 17px),
+        linear-gradient(180deg,#8bd5ff 0%,#cdefff 40%,#f6fbff 40%,#f6fbff 100%);
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+    .sun{
+      position:fixed; top:18px; right:22px; width:88px; height:88px; border-radius:50%;
+      background:#ffd84d; box-shadow:0 0 0 10px rgba(255,216,77,.22); z-index:0;
+      display:flex; align-items:center; justify-content:center; font-size:34px;
+    }
+    .cloud{position:fixed; z-index:0; opacity:.85; background:white; border-radius:40px;}
+    .cloud:before,.cloud:after{content:""; position:absolute; background:white; border-radius:50%;}
+    .c1{width:120px;height:42px; top:60px; left:40px}.c1:before{width:46px;height:46px; left:12px; top:-20px}.c1:after{width:56px;height:56px; right:14px; top:-26px}
+    .c2{width:100px;height:36px; top:120px; left:68%}.c2:before{width:36px;height:36px; left:10px; top:-15px}.c2:after{width:50px;height:50px; right:8px; top:-22px}
+    .wrap{position:relative; z-index:1; max-width:1000px; margin:0 auto; padding:18px 16px 38px;}
+    .header{
+      text-align:center; background:rgba(255,255,255,.92); border:4px solid #fff; border-radius:28px;
+      box-shadow:var(--shadow); padding:18px 14px; margin-top:20px;
+    }
+    .title{
+      font-size:clamp(30px,5vw,56px); font-weight:900; letter-spacing:2px; margin:0;
+      background:linear-gradient(90deg,#ff5f87,#ffa93a,#ffe24b,#52d66c,#4db5ff,#8e6bff);
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      text-shadow:2px 2px 0 rgba(255,255,255,.6);
+    }
+    .subtitle{font-size:clamp(16px,2.4vw,22px); margin:8px 0 0; font-weight:700}
+    .panel{
+      background:rgba(255,255,255,.95); border-radius:28px; box-shadow:var(--shadow);
+      padding:18px; margin-top:18px; border:4px solid #fff;
+    }
+    .setup{display:grid; grid-template-columns:1.3fr .7fr; gap:16px; align-items:center}
+    .setup .left p{margin:0 0 10px; font-size:18px; font-weight:700}
+    label{font-weight:800; display:block; margin-bottom:8px; font-size:18px}
+    input[type="text"]{
+      width:100%; padding:14px 16px; border-radius:16px; border:3px solid #9bd8ff;
+      font-size:18px; outline:none;
+    }
+    .btn{
+      border:none; border-radius:18px; padding:14px 22px; font-size:18px; font-weight:900; cursor:pointer;
+      box-shadow:0 6px 0 rgba(0,0,0,.12); transition:transform .15s ease;
+    }
+    .btn:active{transform:translateY(2px)}
+    .btn-start{background:#62d56f; color:#fff; width:100%}
+    .btn-music{background:#8e6bff; color:#fff; width:100%}
+    .quiz{display:none}
+    .topbar{display:flex; gap:12px; flex-wrap:wrap; justify-content:space-between; align-items:center; margin-bottom:10px}
+    .chip{
+      padding:10px 16px; border-radius:999px; font-size:16px; font-weight:900; color:#233;
+      background:var(--yellow); border:3px solid #fff; box-shadow:var(--shadow);
+    }
+    .question-card{
+      background:linear-gradient(180deg,#ffffff,#f9fbff); border-radius:28px; border:4px dashed #b8dfff;
+      padding:18px; text-align:center;
+    }
+    .instruction{font-size:28px; font-weight:900; margin:4px 0 10px}
+    .hint{font-size:18px; font-weight:700; margin:0 0 12px; color:#4b5f7d}
+    .picture-box{
+      margin:0 auto 16px; width:min(360px,90%); min-height:220px; border-radius:30px;
+      display:flex; flex-direction:column; justify-content:center; align-items:center; gap:8px;
+      box-shadow:var(--shadow); border:4px solid #fff;
+    }
+    .emoji{font-size:96px; line-height:1}
+    .cat{font-size:18px; font-weight:900; padding:8px 14px; border-radius:999px; background:rgba(255,255,255,.75)}
+    .answer-row{max-width:520px; margin:0 auto; display:grid; grid-template-columns:1fr auto; gap:10px}
+    .answer-row input{font-size:22px; font-weight:700; text-align:center; text-transform:lowercase; border:4px solid #ffd37c}
+    .btn-check{background:#ff9f43; color:#fff; min-width:130px}
+    .feedback{min-height:42px; padding-top:10px; font-size:24px; font-weight:900}
+    .feedback.ok{color:#1aa551}.feedback.no{color:#e04343}
+    .helper{font-size:16px; color:#5a6b82; margin-top:8px}
+    .stars{font-size:18px; min-height:24px; margin-top:6px}
+    .result{display:none; text-align:center}
+    .result .big{font-size:34px; font-weight:900; margin:10px 0}
+    .result .score{font-size:58px; font-weight:900; color:#ff7b33; margin:8px 0}
+    .btn-restart{background:#4db5ff;color:white}
+    .footer-decor{display:flex; justify-content:space-between; align-items:flex-end; margin-top:18px; opacity:.95}
+    .road{height:68px; background:#606a7d; border-radius:100px; position:relative; overflow:hidden; margin-top:18px}
+    .road:before{content:""; position:absolute; left:0; right:0; top:50%; height:8px; transform:translateY(-50%);
+      background:repeating-linear-gradient(90deg, transparent 0 24px, white 24px 52px);}
+    canvas#confetti{position:fixed; inset:0; pointer-events:none; z-index:4}
+    @media (max-width:700px){
+      .setup{grid-template-columns:1fr}
+      .answer-row{grid-template-columns:1fr}
+      .btn-check,.btn-music,.btn-start{width:100%}
+      .instruction{font-size:23px}
+      .emoji{font-size:84px}
+    }
+  </style>
+</head>
+<body>
+  <div class="sun">😊</div>
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <canvas id="confetti"></canvas>
+
+  <div class="wrap">
+    <div class="header">
+      <h1 class="title">GOING AROUND</h1>
+      <div class="subtitle">Writing Quiz • Type the correct transport word</div>
+    </div>
+
+    <div class="panel" id="startPanel">
+      <div class="setup">
+        <div class="left">
+          <p>Welcome! Write your name first, then answer <strong>5 questions</strong>.</p>
+          <label for="studentName">Student Name</label>
+          <input id="studentName" type="text" placeholder="Type your name here" maxlength="40" />
+        </div>
+        <div class="right">
+          <button class="btn btn-music" id="musicBtn">🎵 Music: ON</button>
+          <div style="height:10px"></div>
+          <button class="btn btn-start" id="startBtn">START QUIZ</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel quiz" id="quizPanel">
+      <div class="topbar">
+        <div class="chip" id="playerChip">Name: -</div>
+        <div class="chip" id="questionChip">Question: 1 / 5</div>
+        <div class="chip" id="scoreChip">Stars: 0 ⭐</div>
+      </div>
+
+      <div class="question-card">
+        <div class="instruction">Write the correct word.</div>
+        <div class="hint" id="hintText">Look at the picture.</div>
+        <div class="picture-box" id="pictureBox">
+          <div class="emoji" id="emojiBox">🚁</div>
+          <div class="cat" id="categoryBox">BY AIR</div>
+        </div>
+
+        <div class="answer-row">
+          <input id="answerInput" type="text" placeholder="type the word here" autocomplete="off" />
+          <button class="btn btn-check" id="checkBtn">CHECK</button>
+        </div>
+        <div class="helper">Use small letters or capital letters — both are okay.</div>
+        <div class="feedback" id="feedback"></div>
+        <div class="stars" id="starsRow"></div>
+      </div>
+
+      <div class="road"></div>
+    </div>
+
+    <div class="panel result" id="resultPanel">
+      <div class="big">Great job! 🎉</div>
+      <p id="finalName" style="font-size:24px;font-weight:800;margin:0"></p>
+      <div class="score" id="finalScore">5 / 5</div>
+      <p style="font-size:22px;font-weight:700">You have finished the quiz.</p>
+      <button class="btn btn-restart" id="restartBtn">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <script>
+    const transportBank = [
+      {word:'helicopter', emoji:'🚁', category:'BY AIR', bg:'#ffdfe8', synonyms:['helicopter']},
+      {word:'aeroplane', emoji:'✈️', category:'BY AIR', bg:'#fff1bf', synonyms:['aeroplane','airplane','plane']},
+      {word:'boat', emoji:'🚤', category:'BY WATER', bg:'#dff3ff', synonyms:['boat']},
+      {word:'ferry', emoji:'⛴️', category:'BY WATER', bg:'#efe3ff', synonyms:['ferry']},
+      {word:'bicycle', emoji:'🚲', category:'BY LAND', bg:'#ddf8da', synonyms:['bicycle','bike']},
+      {word:'motorcycle', emoji:'🏍️', category:'BY LAND', bg:'#ffe4ee', synonyms:['motorcycle','motorbike']},
+      {word:'car', emoji:'🚗', category:'BY LAND', bg:'#fff2cf', synonyms:['car']},
+      {word:'bus', emoji:'🚌', category:'BY LAND', bg:'#e4fbff', synonyms:['bus']}
+    ];
+
+    const startPanel = document.getElementById('startPanel');
+    const quizPanel = document.getElementById('quizPanel');
+    const resultPanel = document.getElementById('resultPanel');
+    const studentName = document.getElementById('studentName');
+    const startBtn = document.getElementById('startBtn');
+    const musicBtn = document.getElementById('musicBtn');
+    const playerChip = document.getElementById('playerChip');
+    const questionChip = document.getElementById('questionChip');
+    const scoreChip = document.getElementById('scoreChip');
+    const pictureBox = document.getElementById('pictureBox');
+    const emojiBox = document.getElementById('emojiBox');
+    const categoryBox = document.getElementById('categoryBox');
+    const answerInput = document.getElementById('answerInput');
+    const checkBtn = document.getElementById('checkBtn');
+    const feedback = document.getElementById('feedback');
+    const starsRow = document.getElementById('starsRow');
+    const finalName = document.getElementById('finalName');
+    const finalScore = document.getElementById('finalScore');
+    const restartBtn = document.getElementById('restartBtn');
+
+    let questions = [];
+    let current = 0;
+    let score = 0;
+    let musicOn = true;
+    let audioCtx = null;
+    let musicNodes = [];
+
+    function shuffle(arr){
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function prepareQuestions(){
+      questions = shuffle(transportBank).slice(0,5);
+      current = 0;
+      score = 0;
+    }
+
+    function renderQuestion(){
+      const q = questions[current];
+      questionChip.textContent = `Question: ${current+1} / 5`;
+      scoreChip.textContent = `Stars: ${score} ⭐`;
+      pictureBox.style.background = q.bg;
+      emojiBox.textContent = q.emoji;
+      categoryBox.textContent = q.category;
+      answerInput.value = '';
+      answerInput.focus();
+      feedback.textContent = '';
+      feedback.className = 'feedback';
+      starsRow.textContent = '';
+    }
+
+    function normalize(text){
+      return text.toLowerCase().trim().replace(/\s+/g,' ');
+    }
+
+    function launchConfetti(){
+      const canvas = document.getElementById('confetti');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const pieces = Array.from({length:120}, () => ({
+        x: Math.random()*canvas.width,
+        y: -20 - Math.random()*canvas.height*.4,
+        w: 6 + Math.random()*8,
+        h: 8 + Math.random()*10,
+        dx: -2 + Math.random()*4,
+        dy: 2 + Math.random()*4,
+        r: Math.random()*Math.PI,
+        dr: -0.15 + Math.random()*0.3,
+        c: ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#b983ff','#ff8fab'][Math.floor(Math.random()*6)]
+      }));
+      let frame = 0;
+      function draw(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        pieces.forEach(p => {
+          p.x += p.dx; p.y += p.dy; p.r += p.dr;
+          ctx.save();
+          ctx.translate(p.x,p.y); ctx.rotate(p.r);
+          ctx.fillStyle = p.c;
+          ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+          ctx.restore();
+        });
+        frame++;
+        if(frame < 80) requestAnimationFrame(draw); else ctx.clearRect(0,0,canvas.width,canvas.height);
+      }
+      draw();
+    }
+
+    function checkAnswer(){
+      const q = questions[current];
+      const ans = normalize(answerInput.value);
+      const ok = q.synonyms.includes(ans);
+
+      if(ok){
+        score++;
+        feedback.textContent = 'Correct! Great job! ⭐';
+        feedback.className = 'feedback ok';
+        starsRow.textContent = '⭐ ⭐ ⭐';
+        scoreChip.textContent = `Stars: ${score} ⭐`;
+        launchConfetti();
+        setTimeout(() => {
+          current++;
+          if(current < questions.length) renderQuestion();
+          else showResult();
+        }, 1200);
+      } else {
+        feedback.textContent = 'Try again!';
+        feedback.className = 'feedback no';
+        starsRow.textContent = '✏️ Look carefully at the picture.';
+        answerInput.focus();
+        answerInput.select();
+      }
+    }
+
+    function showResult(){
+      quizPanel.style.display = 'none';
+      resultPanel.style.display = 'block';
+      finalName.textContent = `Name: ${studentName.value.trim()}`;
+      finalScore.textContent = `${score} / 5`;
+      saveResult();
+    }
+
+    function saveResult(){
+      const key = 'goingAroundWritingResults';
+      const records = JSON.parse(localStorage.getItem(key) || '[]');
+      records.push({
+        name: studentName.value.trim(),
+        score: score,
+        total: 5,
+        date: new Date().toLocaleString()
+      });
+      localStorage.setItem(key, JSON.stringify(records));
+    }
+
+    function startQuiz(){
+      const name = studentName.value.trim();
+      if(!name){
+        alert('Please type your name first.');
+        studentName.focus();
+        return;
+      }
+      playerChip.textContent = `Name: ${name}`;
+      prepareQuestions();
+      startPanel.style.display = 'none';
+      resultPanel.style.display = 'none';
+      quizPanel.style.display = 'block';
+      startMusic();
+      renderQuestion();
+    }
+
+    function restartQuiz(){
+      startPanel.style.display = 'block';
+      quizPanel.style.display = 'none';
+      resultPanel.style.display = 'none';
+    }
+
+    function startMusic(){
+      if(!musicOn) return;
+      if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      stopMusic();
+
+      const notes = [523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 783.99, 698.46];
+      const gain = audioCtx.createGain();
+      gain.gain.value = 0.03;
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime + 0.05;
+      const beat = 0.45;
+      for(let loop=0; loop<16; loop++){
+        notes.forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          osc.connect(gain);
+          const t = now + (loop*notes.length + i) * beat;
+          osc.start(t);
+          osc.stop(t + 0.28);
+          musicNodes.push(osc);
+        });
+      }
+      musicNodes.push(gain);
+    }
+
+    function stopMusic(){
+      musicNodes.forEach(n => { try{ if(n.stop) n.stop(); if(n.disconnect) n.disconnect(); }catch(e){} });
+      musicNodes = [];
+    }
+
+    musicBtn.addEventListener('click', () => {
+      musicOn = !musicOn;
+      musicBtn.textContent = `🎵 Music: ${musicOn ? 'ON' : 'OFF'}`;
+      if(musicOn) startMusic(); else stopMusic();
+    });
+
+    startBtn.addEventListener('click', startQuiz);
+    checkBtn.addEventListener('click', checkAnswer);
+    answerInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') checkAnswer(); });
+    restartBtn.addEventListener('click', restartQuiz);
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('confetti');
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    });
+  </script>
+</body>
+</html>
